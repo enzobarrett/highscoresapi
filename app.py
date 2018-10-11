@@ -30,12 +30,33 @@ def api_articles():
 @app.route('/getnewkey')
 def api_article():
     def checkduplicate(key, name):
-        mycursor.execute("""select * from keytables where apikey like %s""" (key))
 
-        mycursor.execute(
-    mycursor = mydb.cursor()    
-    apikey = ''.join(random.choice(string.lowercase) for x in range(5)
-    tabname = ''.join(random.choice(string.lowercase) for x in range(5)
+        test1 = 'select * from keytables where apikey like \'%s\'' % (key) 
+        mycursor.execute(test1)
+        row_count = mycursor.rowcount
+
+        test2 = 'select * from keytables where name like \'%s\'' % (name)
+        mycursor.execute(test2)
+        row_count2 = mycursor.rowcount
+        print(row_count)
+        print(row_count2)
+        if (row_count == 1):
+            return True
+        if (row_count2 == 1):
+            return True
+        else:
+            return False
+        
+    mycursor = mydb.cursor(buffered=True)
+    apikey = ''.join(random.choice(string.lowercase) for x in range(5))
+    tabname = ''.join(random.choice(string.lowercase) for x in range(5))
+    while checkduplicate(apikey, tabname):
+        print("generating new keys")
+        apikey = ''.join(random.choice(string.lowercase) for x in range(5))
+        tabname = ''.join(random.choice(string.lowercase) for x in range(5))
+    mycursor.execute("insert into keytables values (%s, %s)", (apikey, tabname,))
+    mydb.commit()
+    return apikey
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)
 
