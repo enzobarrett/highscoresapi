@@ -10,13 +10,13 @@ mydb = mysql.connector.connect(
     database='highscores'
 )
 
+mycursor = mydb.cursor(buffered=True)
 @app.route('/test')
 def api_root():
     return 'Welcome\n'
 
 @app.route('/')
 def api_articles():
-    mycursor = mydb.cursor()
     mycursor.execute('SELECT * FROM scores ORDER BY CAST(score AS unsigned) DESC limit 10')
     row_headers = [ x[0] for x in mycursor.description ]
     rv = mycursor.fetchall()
@@ -47,13 +47,13 @@ def api_article():
         else:
             return False
         
-    mycursor = mydb.cursor(buffered=True)
     apikey = ''.join(random.choice(string.lowercase) for x in range(5))
     tabname = ''.join(random.choice(string.lowercase) for x in range(5))
     while checkduplicate(apikey, tabname):
         print("generating new keys")
         apikey = ''.join(random.choice(string.lowercase) for x in range(5))
         tabname = ''.join(random.choice(string.lowercase) for x in range(5))
+    mycursor.execute("create table %s (name VARCHAR(20), score VARCHAR(20))"% (tabname,))
     mycursor.execute("insert into keytables values (%s, %s)", (apikey, tabname,))
     mydb.commit()
     return apikey
