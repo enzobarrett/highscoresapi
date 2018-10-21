@@ -13,6 +13,7 @@ mydb = mysql.connector.connect(
 )
 
 mycursor = mydb.cursor(buffered=True)
+newcursor = mydb.cursor()
 
 def paid(table):
     mycursor.execute('SELECT paid FROM keytables WHERE name = %s', (table,))
@@ -21,8 +22,8 @@ def paid(table):
         paid = row[0]
     return paid
 def get_table(key):
-    mycursor.execute('SELECT name FROM keytables WHERE apikey = %s', (key,))
-    tablename = mycursor.fetchall()
+    newcursor.execute('SELECT name FROM keytables WHERE apikey = %s', (key,))
+    tablename = newcursor.fetchall()
     print("fetch get table")
     table = 'e'
     for row in tablename:
