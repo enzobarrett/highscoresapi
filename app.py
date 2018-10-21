@@ -22,9 +22,10 @@ def paid(table):
     return paid
 def get_table(key):
     mycursor.execute('SELECT name FROM keytables WHERE apikey = %s', (key,))
-    rv = mycursor.fetchall()
+    tablename = mycursor.fetchall()
+    print("fetch get table")
     table = 'e'
-    for row in rv:
+    for row in tablename:
         table = row[0]
     print("in get table table is" + table)
     if (table == 'e'):
@@ -53,6 +54,7 @@ def gethighscorelist():
     else:
         mycursor.execute('SELECT * FROM %s ORDER BY CAST(score AS unsigned) DESC limit 5' % (getTable,))
         rv = mycursor.fetchall()
+        print("fetch get scores")
         row_headers = [ x[0] for x in mycursor.description ]
         json_data = []
         for result in rv:
