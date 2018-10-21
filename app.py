@@ -119,5 +119,5 @@ def api_keygen():
     mydb.commit()
     return apikey
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False, threaded=True)
+    app.run()
 
