@@ -51,13 +51,8 @@ def gethighscorelist():
     if (getTable == 'e'):
         return Response("Error: not found", status=404)
     else:
-        ispaid = paid(getTable)
-        if (ispaid == 0):
-            mycursor.execute('SELECT * FROM %s ORDER BY CAST(score AS unsigned) DESC limit 5' % (getTable,))
-            rv = mycursor.fetchall()
-        else:
-            mycursor.execute('SELECT * FROM %s ORDER BY CAST(score AS unsigned) DESC limit 10' % (getTable,))
-            rv = mycursor.fetchall()
+        mycursor.execute('SELECT * FROM %s ORDER BY CAST(score AS unsigned) DESC limit 5' % (getTable,))
+        rv = mycursor.fetchall()
         row_headers = [ x[0] for x in mycursor.description ]
         json_data = []
         for result in rv:
@@ -119,5 +114,5 @@ def api_keygen():
     mydb.commit()
     return apikey
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False, threaded=True)
+    app.run()
 
