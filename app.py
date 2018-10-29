@@ -9,41 +9,16 @@ mydb = mysql.connector.connect(
     host='localhost',
     user='enzo',
     passwd='password',
-    database='highscores'
+    database='highscores',
+    raise_on_warnings=True
 )
-
-
-def paid(table):
-    mycursor.execute('SELECT paid FROM keytables WHERE name = %s', (table,))
-    rv = mycursor.fetchall()
-    for row in rv:
-        paid = row[0]
-    return paid
-
-
-def get_table(key):
-    tablecursor = mydb.cursor()
-    tablecursor.execute('SELECT name FROM keytables WHERE apikey = %s', (key,))
-    tablename = tablecursor.fetchall()
-    mydb.commit()
-    table = 'e'
-    for row in tablename:
-        table = row[0]
-    if (table == 'e'):
-        tablecursor.close()
-        return 'e'
-    else:
-        tablecursor.close()
-        return tablesubstring
 
 @app.route('/')
 def gethighscorelist():
-    print("here1")
     getcursor = mydb.cursor()
-    getstring = 'SELECT * FROM ' + request.args['key'] + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
+    getstring = 'SELECT * FROM ' + str(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
     getcursor.execute(getstring)
     topscores = getcursor.fetchall()
-    print("fetch get scores")
     field_names = [i[0] for i in getcursor.description]
     getcursor.close()
     json_data = []
@@ -55,12 +30,12 @@ def gethighscorelist():
 @app.route('/gettop')
 def gettop():
     topcursor = mydb.cursor()
-    topcursor.execute('select count(*) from %s' % (request.args['key'],))
+    gettopstring = 'select count(*) from ' + str(request.args['key'])
+    topcursor.execute(gettopstring)
     rv2 = topcursor.fetchall()
     topcursor.close()
     for row in rv2:
         numberintable = row[0]
-        print(numberintable)
     if (numberintable < 5):
         return "goodtogo"
     if (numberintable >= 5):
