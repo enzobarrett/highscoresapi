@@ -1,16 +1,15 @@
-import mysql.connector
+import pymysql.cursors
 from flask import Flask, url_for, request, render_template, Response
 import json, random, string
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 random = random.SystemRandom()
-mydb = mysql.connector.connect(
+mydb = pymysql.connect(
     host='localhost',
     user='enzo',
     passwd='password',
-    database='highscores',
-    raise_on_warnings=True
+    database='highscores'
 )
 
 @app.route('/')
