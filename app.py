@@ -63,12 +63,14 @@ def insert_score():
 def api_keygen():
 
     def checkduplicate(key, name):
-        checkcursor = mydb.cursor(buffered=True)
+        checkcursor = mydb.cursor()
         checkcursor.execute('select * from keytables where apikey like %s', (key,))
         checkcursor.close()
         row_count = checkcursor.rowcount
-        checkcursor.execute('select * from keytables where name like %s', (name,))
-        row_count2 = checkcursor.rowcount
+        checkcursor2 = mydb.cursor()
+        checkcursor2.execute('select * from keytables where name like %s', (name,))
+        checkcursor2.close()
+        row_count2 = checkcursor2.rowcount
         print(row_count)
         print(row_count2)
         if (row_count == 1):
@@ -84,8 +86,7 @@ def api_keygen():
         apikey = ''.join(random.choice(string.lowercase) for x in range(5))
         tabname = ''.join(random.choice(string.lowercase) for x in range(5))
     addkeycursor = mydb.cursor()
-    addkeycursor.execute("create table %s (name VARCHAR(20), score VARCHAR(20))" % (tabname,))
-    addkeycursor.execute("insert into keytables values (%s, %s, %s)", (apikey, tabname, 0))
+    addkeycursor.execute("create table %s (name VARCHAR(20), score VARCHAR(20))" % (apikey,))
     addkeycursor.close()
     mydb.commit()
     return apikey
