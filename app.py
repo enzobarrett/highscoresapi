@@ -12,6 +12,7 @@ mydb = pymysql.connect(
     database='highscores'
 )
 
+
 @app.route('/')
 def gethighscorelist():
     getstring = 'SELECT * FROM ' + str(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
@@ -19,11 +20,15 @@ def gethighscorelist():
     getcursor.execute(getstring)
     getcursor.close()
     topscores = getcursor.fetchall()
-    field_names = [i[0] for i in getcursor.description]
+    print(topscores)
     json_data = []
+    #field_names = [i[0] for i in getcursor.description]
+    field_names = [u'name', u'score']
+    print(field_names)
     for result in topscores:
         json_data.append(dict(zip(field_names, result)))
     print("about to return")
+    print(json_data)
     return Response(json.dumps(json_data), status=200)
     #return str(paid(getTable))
 @app.route('/gettop')
@@ -53,6 +58,7 @@ def insert_score():
     insertcursor.execute(string, (request.args['name'], request.args['score'],))
     insertcursor.close()
     return Response("success", status=200)
+    mydb.commit()
 @app.route('/getnewkey')
 def api_keygen():
 
@@ -84,4 +90,4 @@ def api_keygen():
     mydb.commit()
     return apikey
 if __name__ == '__main__':
-    app.run(threaded=True)
+    app.run()
