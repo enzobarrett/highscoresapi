@@ -61,7 +61,6 @@ def insert_score():
     mydb.commit()
 @app.route('/getnewkey')
 def api_keygen():
-
     def checkduplicate(key, name):
         checkcursor = mydb.cursor()
         checkcursor.execute('select * from keytables where apikey like %s', (key,))
@@ -90,5 +89,16 @@ def api_keygen():
     addkeycursor.close()
     mydb.commit()
     return apikey
+@app.route('/checktable')
+def checktable():
+    checkstring = "SHOW TABLES LIKE " + str(request.args['table'])
+    checkcursor = mydb.cursor()
+    checkcursor.execute(checkstring)
+    checkcursor.close()
+    if (checkcursor.rowcount > 0): 
+        return "found"
+    else: 
+        return "notfound"
+    
 if __name__ == '__main__':
     app.run(threaded=False)
