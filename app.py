@@ -15,50 +15,71 @@ mydb = pymysql.connect(
 
 @app.route('/')
 def gethighscorelist():
-    getstring = 'SELECT * FROM ' + str(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
-    getcursor = mydb.cursor()
-    getcursor.execute(getstring)
-    getcursor.close()
-    topscores = getcursor.fetchall()
-    print(topscores)
-    json_data = []
-    #field_names = [i[0] for i in getcursor.description]
-    field_names = [u'name', u'score']
-    print(field_names)
-    for result in topscores:
-        json_data.append(dict(zip(field_names, result)))
-    print("about to return")
-    print(json_data)
-    return Response(json.dumps(json_data), status=200)
-    #return str(paid(getTable))
+    checkstring = "SHOW TABLES LIKE %s"  
+    checkcursor = mydb.cursor()
+    checkcursor.execute(checkstring, str(request.args['key']))
+    checkcursor.close()
+    if (checkcursor.rowcount > 0): 
+        getstring = 'SELECT * FROM {}'.format(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
+        getcursor = mydb.cursor()
+        getcursor.execute(getstring)
+        getcursor.close()
+        topscores = getcursor.fetchall()
+        print(topscores)
+        json_data = []
+        #field_names = [i[0] for i in getcursor.description]
+        field_names = [u'name', u'score']
+        print(field_names)
+        for result in topscores:
+            json_data.append(dict(zip(field_names, result)))
+        print("about to return")
+        print(json_data)
+        return Response(json.dumps(json_data), status=200)
+        #return str(paid(getTable))
+    else: 
+        return "notfound"
 @app.route('/gettop')
 def gettop():
-    gettopstring = 'select count(*) from ' + str(request.args['key'])
-    topcursor = mydb.cursor()
-    topcursor.execute(gettopstring)
-    topcursor.close()
-    rv2 = topcursor.fetchall()
-    for row in rv2:
-        numberintable = row[0]
-    if (numberintable < 5):
-        return "goodtogo"
-    if (numberintable >= 5):
-        usenumber = 4
-    nthstring = 'select score from ' + request.args['key'] + ' order by cast(score as unsigned) desc limit ' + str(usenumber) + ',1;'
-    nthcursor = mydb.cursor()
-    nthcursor.execute(nthstring)
-    nthcursor.close()
-    rv3 = nthcursor.fetchall()
-    for row in rv3:
-        return row[0]
+    checkstring = "SHOW TABLES LIKE %s"  
+    checkcursor = mydb.cursor()
+    checkcursor.execute(checkstring, str(request.args['key']))
+    checkcursor.close()
+    if (checkcursor.rowcount > 0): 
+        gettopstring = 'select count(*) from {}'.format(request.args['key'])
+        topcursor = mydb.cursor()
+        topcursor.execute(gettopstring)
+        topcursor.close()
+        rv2 = topcursor.fetchall()
+        for row in rv2:
+            numberintable = row[0]
+        if (numberintable < 5):
+            return "goodtogo"
+        if (numberintable >= 5):
+            usenumber = 4
+        nthstring = 'select score from {}'.format(request.args['key']) + ' order by cast(score as unsigned) desc limit ' + str(usenumber) + ',1;'
+        nthcursor = mydb.cursor()
+        nthcursor.execute(nthstring)
+        nthcursor.close()
+        rv3 = nthcursor.fetchall()
+        for row in rv3:
+            return row[0]
+    else: 
+        return "notfound"
 @app.route('/insertscore')
 def insert_score():
-    string = 'insert into ' + request.args['key'] + ' values (%s,%s)'
-    insertcursor = mydb.cursor()
-    insertcursor.execute(string, (request.args['name'], request.args['score'],))
-    insertcursor.close()
-    return Response("success", status=200)
-    mydb.commit()
+    checkstring = "SHOW TABLES LIKE %s"  
+    checkcursor = mydb.cursor()
+    checkcursor.execute(checkstring, str(request.args['key']))
+    checkcursor.close()
+    if (checkcursor.rowcount > 0): 
+        string = 'insert into {}'.format(request.args['key']) + ' values (%s,%s)'
+        insertcursor = mydb.cursor()
+        insertcursor.execute(string, (request.args['name'], request.args['score'],))
+        insertcursor.close()
+        return Response("success", status=200)
+        mydb.commit()
+    else: 
+        return "notfound"
 @app.route('/getnewkey')
 def api_keygen():
     def checkduplicate(key, name):
@@ -89,16 +110,6 @@ def api_keygen():
     addkeycursor.close()
     mydb.commit()
     return apikey
-@app.route('/checktable')
-def checktable():
-    checkstring = "SHOW TABLES LIKE " + str(request.args['table'])
-    checkcursor = mydb.cursor()
-    checkcursor.execute(checkstring)
-    checkcursor.close()
-    if (checkcursor.rowcount > 0): 
-        return "found"
-    else: 
-        return "notfound"
     
 if __name__ == '__main__':
     app.run(threaded=False)
