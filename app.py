@@ -1,11 +1,11 @@
-import pymysql.cursors
+import mysql.connector 
 from flask import Flask, url_for, request, render_template, Response
 import json, random, string
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 random = random.SystemRandom()
-mydb = pymysql.connect(
+mydb = mysql.connector.connect(
     host='localhost',
     user='enzo',
     passwd='password',
@@ -16,15 +16,16 @@ mydb = pymysql.connect(
 @app.route('/')
 def gethighscorelist():
     checkstring = "SHOW TABLES LIKE %s"  
-    checkcursor = mydb.cursor()
-    checkcursor.execute(checkstring, str(request.args['key']))
+    checkcursor = mydb.cursor(buffered=True)
+    checkcursor.execute(checkstring, (request.args['key'],))
+    rowcount = checkcursor.rowcount
     checkcursor.close()
-    if (checkcursor.rowcount > 0): 
+    if (rowcount > 0): 
         getstring = 'SELECT * FROM {}'.format(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
-        getcursor = mydb.cursor()
+        getcursor = mydb.cursor(buffered=True)
         getcursor.execute(getstring)
-        getcursor.close()
         topscores = getcursor.fetchall()
+        getcursor.close()
         print(topscores)
         json_data = []
         #field_names = [i[0] for i in getcursor.description]
@@ -41,15 +42,16 @@ def gethighscorelist():
 @app.route('/gettop')
 def gettop():
     checkstring = "SHOW TABLES LIKE %s"  
-    checkcursor = mydb.cursor()
-    checkcursor.execute(checkstring, str(request.args['key']))
+    checkcursor = mydb.cursor(buffered=True)
+    checkcursor.execute(checkstring, (request.args['key'],))
+    rowcount = checkcursor.rowcount
     checkcursor.close()
-    if (checkcursor.rowcount > 0): 
+    if (rowcount > 0): 
         gettopstring = 'select count(*) from {}'.format(request.args['key'])
         topcursor = mydb.cursor()
         topcursor.execute(gettopstring)
-        topcursor.close()
         rv2 = topcursor.fetchall()
+        topcursor.close()
         for row in rv2:
             numberintable = row[0]
         if (numberintable < 5):
@@ -59,8 +61,8 @@ def gettop():
         nthstring = 'select score from {}'.format(request.args['key']) + ' order by cast(score as unsigned) desc limit ' + str(usenumber) + ',1;'
         nthcursor = mydb.cursor()
         nthcursor.execute(nthstring)
-        nthcursor.close()
         rv3 = nthcursor.fetchall()
+        nthcursor.close()
         for row in rv3:
             return row[0]
     else: 
@@ -68,29 +70,30 @@ def gettop():
 @app.route('/insertscore')
 def insert_score():
     checkstring = "SHOW TABLES LIKE %s"  
-    checkcursor = mydb.cursor()
-    checkcursor.execute(checkstring, str(request.args['key']))
+    checkcursor = mydb.cursor(buffered=True)
+    checkcursor.execute(checkstring, (request.args['key'],), multi=False)
+    rowcount = checkcursor.rowcount
     checkcursor.close()
-    if (checkcursor.rowcount > 0): 
+    if (rowcount > 0): 
         string = 'insert into {}'.format(request.args['key']) + ' values (%s,%s)'
-        insertcursor = mydb.cursor()
+        insertcursor = mydb.cursor(buffered=True)
         insertcursor.execute(string, (request.args['name'], request.args['score'],))
+        mydb.commit()
         insertcursor.close()
         return Response("success", status=200)
-        mydb.commit()
     else: 
         return "notfound"
 @app.route('/getnewkey')
 def api_keygen():
     def checkduplicate(key, name):
-        checkcursor = mydb.cursor()
+        checkcursor = mydb.cursor(buffered=True)
         checkcursor.execute('select * from keytables where apikey like %s', (key,))
-        checkcursor.close()
         row_count = checkcursor.rowcount
-        checkcursor2 = mydb.cursor()
+        checkcursor.close()
+        checkcursor2 = mydb.cursor(buffered=True)
         checkcursor2.execute('select * from keytables where name like %s', (name,))
-        checkcursor2.close()
         row_count2 = checkcursor2.rowcount
+        checkcursor2.close()
         print(row_count)
         print(row_count2)
         if (row_count == 1):
@@ -105,7 +108,7 @@ def api_keygen():
         print("generating new keys")
         apikey = ''.join(random.choice(string.lowercase) for x in range(5))
         tabname = ''.join(random.choice(string.lowercase) for x in range(5))
-    addkeycursor = mydb.cursor()
+    addkeycursor = mydb.cursor(buffered=True)
     addkeycursor.execute("create table %s (name VARCHAR(20), score VARCHAR(20))" % (apikey,))
     addkeycursor.close()
     mydb.commit()
