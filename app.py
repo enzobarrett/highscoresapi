@@ -12,8 +12,11 @@ mydb = mysql.connector.connect(
     database='highscores'
 )
 
-
 @app.route('/')
+def get():
+    return "yoyoyo"
+
+@app.route('/get')
 def gethighscorelist():
     checkstring = "SHOW TABLES LIKE %s"  
     checkcursor = mydb.cursor(buffered=True)
