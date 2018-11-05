@@ -112,7 +112,7 @@ def api_keygen():
         apikey = ''.join(random.choice(string.lowercase) for x in range(5))
         tabname = ''.join(random.choice(string.lowercase) for x in range(5))
     addkeycursor = mydb.cursor(buffered=True)
-    addkeycursor.execute("create table %s (name VARCHAR(20), score VARCHAR(20))" % (apikey,))
+    addkeycursor.execute("create table %s (name VARCHAR(20), score INT)" % (apikey,))
     addkeycursor.close()
     mydb.commit()
     return apikey
