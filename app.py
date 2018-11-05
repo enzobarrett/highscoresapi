@@ -25,21 +25,17 @@ def gethighscorelist():
     checkcursor.close()
     if (rowcount > 0): 
         getstring = 'SELECT * FROM {}'.format(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
-        getcursor = mydb.cursor(buffered=True)
+        print(getstring)
+        getcursor = mydb.cursor()
         getcursor.execute(getstring)
         topscores = getcursor.fetchall()
         getcursor.close()
         print(topscores)
         json_data = []
-        #field_names = [i[0] for i in getcursor.description]
         field_names = [u'name', u'score']
-        print(field_names)
         for result in topscores:
             json_data.append(dict(zip(field_names, result)))
-        print("about to return")
-        print(json_data)
         return Response(json.dumps(json_data), status=200)
-        #return str(paid(getTable))
     else: 
         return "notfound"
 @app.route('/gettop')
