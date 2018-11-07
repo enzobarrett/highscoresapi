@@ -18,10 +18,16 @@ def get():
 
 @app.route('/get')
 def gethighscorelist():
+    mydb = mysql.connector.connect(
+        host='localhost',
+        user='enzo',
+        passwd='password',
+        database='highscores'
+    )
     checkstring = "SHOW TABLES LIKE %s"  
     try:
         checkcursor = mydb.cursor(buffered=True)
-    except OperationalError:
+    except mysql.connector.OperationalError:
         mydb = mysql.connector.connect(
             host='localhost',
             user='enzo',
@@ -51,10 +57,16 @@ def gethighscorelist():
     
 @app.route('/gettop')
 def gettop():
+    mydb = mysql.connector.connect(
+        host='localhost',
+        user='enzo',
+        passwd='password',
+        database='highscores'
+    )
     checkstring = "SHOW TABLES LIKE %s"  
     try:
         checkcursor = mydb.cursor(buffered=True)
-    except OperationalError:
+    except mysql.connector.OperationalError:
         mydb = mysql.connector.connect(
             host='localhost',
             user='enzo',
@@ -89,10 +101,16 @@ def gettop():
         return "notfound"
 @app.route('/insertscore')
 def insert_score():
+    mydb = mysql.connector.connect(
+        host='localhost',
+        user='enzo',
+        passwd='password',
+        database='highscores'
+    )
     checkstring = "SHOW TABLES LIKE %s"  
     try:
         checkcursor = mydb.cursor(buffered=True)
-    except OperationalError:
+    except mysql.connector.OperationalError:
         mydb = mysql.connector.connect(
             host='localhost',
             user='enzo',
@@ -116,8 +134,14 @@ def insert_score():
 def api_keygen():
     def checkduplicate(key, name):
         try:
+            mydb = mysql.connector.connect(
+                host='localhost',
+                user='enzo',
+                passwd='password',
+                database='highscores'
+            )
             checkcursor = mydb.cursor(buffered=True)
-        except OperationalError:
+        except mysql.connector.OperationalError:
             mydb = mysql.connector.connect(
                 host='localhost',
                 user='enzo',
