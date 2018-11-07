@@ -19,17 +19,27 @@ def get():
 @app.route('/get')
 def gethighscorelist():
     checkstring = "SHOW TABLES LIKE %s"  
-    checkcursor = mydb.cursor(buffered=True)
+    try:
+        checkcursor = mydb.cursor(buffered=True)
+    except OperationalError:
+        mydb = mysql.connector.connect(
+            host='localhost',
+            user='enzo',
+            passwd='password',
+            database='highscores'
+        )
+        checkcursor = mydb.cursor(buffered=True)
     checkcursor.execute(checkstring, (request.args['key'],))
     rowcount = checkcursor.rowcount
     checkcursor.close()
     if (rowcount > 0): 
-        getstring = 'SELECT * FROM {}'.format(request.args['key']) + ' ORDER BY CAST(score AS unsigned) DESC limit 5'
+        getstring = 'SELECT * FROM {}'.format(request.args['key']) + ' ORDER BY score DESC limit 5'
         print(getstring)
         getcursor = mydb.cursor()
         getcursor.execute(getstring)
         topscores = getcursor.fetchall()
         getcursor.close()
+        mydb.commit()
         print(topscores)
         json_data = []
         field_names = [u'name', u'score']
@@ -38,16 +48,27 @@ def gethighscorelist():
         return Response(json.dumps(json_data), status=200)
     else: 
         return "notfound"
+    
 @app.route('/gettop')
 def gettop():
     checkstring = "SHOW TABLES LIKE %s"  
-    checkcursor = mydb.cursor(buffered=True)
+    try:
+        checkcursor = mydb.cursor(buffered=True)
+    except OperationalError:
+        mydb = mysql.connector.connect(
+            host='localhost',
+            user='enzo',
+            passwd='password',
+            database='highscores'
+        )
+        checkcursor = mydb.cursor(buffered=True)
     checkcursor.execute(checkstring, (request.args['key'],))
-    rowcount = checkcursor.rowcount
+    ammountofrows = checkcursor.rowcount
     checkcursor.close()
-    if (rowcount > 0): 
+    if (ammountofrows > 0): 
+        mydb.commit()
         gettopstring = 'select count(*) from {}'.format(request.args['key'])
-        topcursor = mydb.cursor()
+        topcursor = mydb.cursor(buffered=True)
         topcursor.execute(gettopstring)
         rv2 = topcursor.fetchall()
         topcursor.close()
@@ -63,13 +84,22 @@ def gettop():
         rv3 = nthcursor.fetchall()
         nthcursor.close()
         for row in rv3:
-            return row[0]
+            return str(row[0])
     else: 
         return "notfound"
 @app.route('/insertscore')
 def insert_score():
     checkstring = "SHOW TABLES LIKE %s"  
-    checkcursor = mydb.cursor(buffered=True)
+    try:
+        checkcursor = mydb.cursor(buffered=True)
+    except OperationalError:
+        mydb = mysql.connector.connect(
+            host='localhost',
+            user='enzo',
+            passwd='password',
+            database='highscores'
+        )
+        checkcursor = mydb.cursor(buffered=True)
     checkcursor.execute(checkstring, (request.args['key'],), multi=False)
     rowcount = checkcursor.rowcount
     checkcursor.close()
@@ -85,12 +115,21 @@ def insert_score():
 @app.route('/getnewkey')
 def api_keygen():
     def checkduplicate(key, name):
-        checkcursor = mydb.cursor(buffered=True)
-        checkcursor.execute('select * from keytables where apikey like %s', (key,))
+        try:
+            checkcursor = mydb.cursor(buffered=True)
+        except OperationalError:
+            mydb = mysql.connector.connect(
+                host='localhost',
+                user='enzo',
+                passwd='password',
+                database='highscores'
+            )
+            checkcursor = mydb.cursor(buffered=True)
+        checkcursor.execute('SHOW TABLES LIKE %s', (key,))
         row_count = checkcursor.rowcount
         checkcursor.close()
         checkcursor2 = mydb.cursor(buffered=True)
-        checkcursor2.execute('select * from keytables where name like %s', (name,))
+        checkcursor2.execute('SHOW TABLES LIKE %s', (name,))
         row_count2 = checkcursor2.rowcount
         checkcursor2.close()
         print(row_count)
